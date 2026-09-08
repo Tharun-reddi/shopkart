@@ -1,0 +1,15 @@
+{
+  "name": "shopkart-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ShopKart sample e-commerce frontend",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "vite": "^6.0.5"
+  },
+  "devDependencies": {}
+}
