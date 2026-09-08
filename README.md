@@ -74,3 +74,5 @@ Your first assignment:
 13. Document the deployment and troubleshooting steps.
 
 Do NOT add Docker/Jenkins/Terraform/Kubernetes yet. Those will be later phases.
+
+Suscessfully Complete!..
