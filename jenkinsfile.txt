@@ -1,0 +1,76 @@
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Checking out ShopKart source code...'
+                checkout scm
+            }
+        }
+
+        stage('Verify Environment') {
+            steps {
+                sh '''
+                    echo "===== SYSTEM ====="
+                    hostname
+                    whoami
+
+                    echo "===== NODE ====="
+                    node --version
+
+                    echo "===== NPM ====="
+                    npm --version
+
+                    echo "===== GIT ====="
+                    git --version
+                '''
+            }
+        }
+
+        stage('Backend Install') {
+            steps {
+                sh '''
+                    cd backend
+                    npm install
+                '''
+            }
+        }
+
+        stage('Frontend Install') {
+            steps {
+                sh '''
+                    cd frontend
+                    npm install
+                '''
+            }
+        }
+
+        stage('Project Verification') {
+            steps {
+                sh '''
+                    echo "===== BACKEND FILES ====="
+                    ls -la backend
+
+                    echo "===== FRONTEND FILES ====="
+                    ls -la frontend
+
+                    echo "ShopKart CI verification completed."
+                '''
+            }
+        }
+    }
+
+    post {
+
+        success {
+            echo 'ShopKart CI SUCCESS ✅'
+        }
+
+        failure {
+            echo 'ShopKart CI FAILED ❌'
+        }
+    }
+}
