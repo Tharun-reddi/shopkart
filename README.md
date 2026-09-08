@@ -17,7 +17,7 @@ Browser -> Frontend -> Backend API -> PostgreSQL
 - npm
 - PostgreSQL 14+ (or compatible)
 
-## Backend setup
+## Backend setup by tharu
 
 ```bash
 cd backend
@@ -36,7 +36,7 @@ http://localhost:5000/health
 Products endpoint:
 http://localhost:5000/api/products
 
-## Frontend setup
+## Frontend setup by tharu
 
 Open another terminal:
 
@@ -54,7 +54,7 @@ Create a PostgreSQL database called `shopkart`.
 
 The backend initialization command creates the table and sample data.
 
-## DevOps assignment
+## DevOps assignment 
 
 Treat this repository as a handoff from the development team.
 
