@@ -1,0 +1,86 @@
+
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: shopkart-mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: shopkart
+      MYSQL_USER: shopkart_user
+      MYSQL_PASSWORD: shopkartpassword
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - shopkart-network
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "shopkart_user",
+          "-pshopkartpassword"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: shopkart-backend
+
+    environment:
+      PORT: 5000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: shopkart
+      DB_USER: shopkart_user
+      DB_PASSWORD: shopkartpassword
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - shopkart-network
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: shopkart-frontend
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - shopkart-network
+
+
+networks:
+  shopkart-network:
+    driver: bridge
+
+
+volumes:
+  mysql_data:
