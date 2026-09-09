@@ -86,20 +86,53 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh '''
-                    echo "Building ShopKart Docker images..."
+           sh '''
+                echo "Building ShopKart Docker images..."
 
-                    docker build \
-                        -t shopkart-backend:${BUILD_NUMBER} \
-                        ./backend
+                 docker build \
+                   -t tharunreddy04/shopkart-backend:${BUILD_NUMBER} \
+                   ./backend
 
-                    docker build \
-                        -t shopkart-frontend:${BUILD_NUMBER} \
-                        ./frontend
-                '''
-            }
+                docker build \
+                    -t tharunreddy04/shopkart-frontend:${BUILD_NUMBER} \
+                    ./frontend
+        '''
+    }
+}
+
+        stage('Docker Push') {
+            steps {
+               withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-credentials',
+                usernameVariable: 'tharunreddy04',
+                passwordVariable: 'DOCKERHUB_TOKEN'
+            )
+        ]) {
+            sh '''
+                echo "$DOCKERHUB_TOKEN" | docker login \
+                    -u "$tharunreddy04" \
+                    --password-stdin
+
+                docker push \
+                    tharunreddy04/shopkart-backend:${BUILD_NUMBER}
+
+                docker push \
+                    tharunreddy04/shopkart-frontend:${BUILD_NUMBER}
+
+                docker logout
+            '''
         }
-
+    }
+}
+        stage('Verify Docker Images') {
+            steps {
+                sh '''
+                   echo "===== SHOPKART IMAGES ====="
+                  docker images | grep shopkart || true
+                '''
+    }
+}
         stage('Docker Images') {
             steps {
                 sh '''
