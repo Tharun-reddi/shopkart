@@ -14,10 +14,6 @@ pipeline {
         stage('Verify Environment') {
             steps {
                 sh '''
-                    echo "===== SYSTEM ====="
-                    hostname
-                    whoami
-
                     echo "===== NODE ====="
                     node --version
 
@@ -26,6 +22,12 @@ pipeline {
 
                     echo "===== GIT ====="
                     git --version
+
+                    echo "===== DOCKER ====="
+                    docker --version
+
+                    echo "===== DOCKER COMPOSE ====="
+                    docker compose version
                 '''
             }
         }
@@ -34,7 +36,7 @@ pipeline {
             steps {
                 sh '''
                     cd backend
-                    npm install
+                    npm ci
                 '''
             }
         }
@@ -43,33 +45,87 @@ pipeline {
             steps {
                 sh '''
                     cd frontend
-                    npm install
+                    npm ci
                 '''
             }
         }
 
-        stage('Project Verification') {
+        stage('Backend Test') {
             steps {
                 sh '''
-                    echo "===== BACKEND ====="
-                    ls -la backend
+                    cd backend
 
-                    echo "===== FRONTEND ====="
-                    ls -la frontend
+                    echo "Running backend tests..."
 
-                    echo "ShopKart CI verification completed."
+                    if npm run test --if-present; then
+                        echo "Backend tests completed."
+                    else
+                        echo "Backend tests failed."
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                sh '''
+                    cd frontend
+
+                    echo "Building frontend..."
+
+                    if npm run build --if-present; then
+                        echo "Frontend build completed."
+                    else
+                        echo "Frontend build failed."
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    echo "Building ShopKart Docker images..."
+
+                    docker build \
+                        -t shopkart-backend:${BUILD_NUMBER} \
+                        ./backend
+
+                    docker build \
+                        -t shopkart-frontend:${BUILD_NUMBER} \
+                        ./frontend
+                '''
+            }
+        }
+
+        stage('Docker Images') {
+            steps {
+                sh '''
+                    echo "ShopKart Docker images created:"
+                    docker images | grep shopkart
                 '''
             }
         }
     }
 
     post {
+
         success {
-            echo 'ShopKart CI SUCCESS ✅'
+            echo '''
+            =========================================
+             SHOPKART CI + DOCKER BUILD SUCCESS
+            =========================================
+            '''
         }
 
         failure {
-            echo 'ShopKart CI FAILED ❌'
+            echo '''
+            =========================================
+             SHOPKART CI FAILED
+            =========================================
+            '''
         }
     }
 }
