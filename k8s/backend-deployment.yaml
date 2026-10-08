@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopkart-backend
+  namespace: shopkart
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopkart-backend
+  template:
+    metadata:
+      labels:
+        app: shopkart-backend
+    spec:
+      containers:
+        - name: backend
+          image: tharunreddy04/shopkart-backend:8
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          startupProbe:
+            tcpSocket:
+              port: 5000
+            periodSeconds: 5
+            failureThreshold: 24
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            periodSeconds: 5
+            failureThreshold: 12
+          env:
+            - name: PORT
+              value: "5000"
+            - name: DB_HOST
+              value: mysql
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_DATABASE
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_PASSWORD
+            

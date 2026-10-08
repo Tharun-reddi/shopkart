@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: shopkart
+spec:
+  type: LoadBalancer
+  selector:
+    app: shopkart-backend
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: TCP
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopkart-backend-service
+  namespace: shopkart
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: shopkart-backend
+
+  ports:
+    - port: 5000
+      targetPort: 5000

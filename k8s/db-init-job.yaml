@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shopkart-db-init
+  namespace: shopkart
+spec:
+  backoffLimit: 10
+  activeDeadlineSeconds: 600
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done
+      containers:
+        - name: initialize-database
+          image: tharunreddy04/shopkart-backend:8
+          imagePullPolicy: IfNotPresent
+          command:
+            - npm
+            - run
+            - db:init
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_DATABASE
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shopkart-db-secret
+                  key: MYSQL_PASSWORD
